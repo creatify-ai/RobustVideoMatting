@@ -31,8 +31,8 @@ class VideoReader(Dataset):
 class VideoWriter:
     def __init__(self, path, frame_rate, bit_rate=1000000):
         self.container = av.open(path, mode='w')
-        self.stream = self.container.add_stream('h264', rate=f'{frame_rate:.4f}')
-        self.stream.pix_fmt = 'yuv420p'
+        self.stream = self.container.add_stream('libvpx-vp9', rate=f'{frame_rate:.4f}')
+        self.stream.pix_fmt = 'yuva420p'
         self.stream.bit_rate = bit_rate
     
     def write(self, frames):
@@ -44,7 +44,7 @@ class VideoWriter:
         frames = frames.mul(255).byte().cpu().permute(0, 2, 3, 1).numpy()
         for t in range(frames.shape[0]):
             frame = frames[t]
-            frame = av.VideoFrame.from_ndarray(frame, format='rgb24')
+            frame = av.VideoFrame.from_ndarray(frame, format='rgba')
             self.container.mux(self.stream.encode(frame))
                 
     def close(self):
